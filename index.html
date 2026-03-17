@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>London Underground Digital Twin - Maximo Asset Management</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <h1>🚇 London Underground Digital Twin</h1>
+                <p class="subtitle">Real-time Asset Monitoring via Maximo</p>
+            </div>
+            <div class="status-indicator">
+                <span class="status-dot"></span>
+                <span>Live Data Stream</span>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- 3D Visualization Canvas -->
+            <div class="visualization-container">
+                <canvas id="canvas3d"></canvas>
+                <div id="mapContainer" style="display: none; width: 100%; height: 100%;"></div>
+                <div class="canvas-overlay">
+                    <div class="view-mode-selector">
+                        <button id="view3D" class="view-mode-btn active">🎯 3D View</button>
+                        <button id="viewMap" class="view-mode-btn">🗺️ Map View</button>
+                        <button id="viewStation" class="view-mode-btn">📸 Station View</button>
+                    </div>
+                    <div class="station-selector" id="stationSelector" style="display: none;">
+                        <select id="stationSelect" class="station-select">
+                            <option value="">Select a station...</option>
+                        </select>
+                    </div>
+                    <div class="controls">
+                        <button id="toggleRotation" class="control-btn">⏸️ Pause Rotation</button>
+                        <button id="resetView" class="control-btn">🔄 Reset View</button>
+                        <button id="togglePhoto" class="control-btn" style="display: none;">🖼️ Toggle Photo</button>
+                    </div>
+                </div>
+                <div class="photo-overlay" id="photoOverlay" style="display: none;">
+                    <img id="stationPhoto" src="" alt="Station Photo" />
+                    <div class="photo-info">
+                        <h3 id="photoStationName"></h3>
+                        <p id="photoStationDesc"></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Asset Information Panel -->
+            <aside class="info-panel">
+                <div class="panel-header">
+                    <h2>Asset Overview</h2>
+                    <div class="refresh-indicator">
+                        <span class="pulse"></span>
+                        <span>Auto-refresh: 2s</span>
+                    </div>
+                </div>
+
+                <!-- Asset Statistics -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">🚆</div>
+                        <div class="stat-content">
+                            <div class="stat-value" id="totalAssets">0</div>
+                            <div class="stat-label">Total Assets</div>
+                        </div>
+                    </div>
+                    <div class="stat-card operational">
+                        <div class="stat-icon">✅</div>
+                        <div class="stat-content">
+                            <div class="stat-value" id="operationalAssets">0</div>
+                            <div class="stat-label">Operational</div>
+                        </div>
+                    </div>
+                    <div class="stat-card warning">
+                        <div class="stat-icon">⚠️</div>
+                        <div class="stat-content">
+                            <div class="stat-value" id="warningAssets">0</div>
+                            <div class="stat-label">Warnings</div>
+                        </div>
+                    </div>
+                    <div class="stat-card critical">
+                        <div class="stat-icon">🔴</div>
+                        <div class="stat-content">
+                            <div class="stat-value" id="criticalAssets">0</div>
+                            <div class="stat-label">Critical</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Selected Asset Details -->
+                <div class="asset-details">
+                    <h3>Selected Asset</h3>
+                    <div id="assetInfo" class="asset-info-content">
+                        <p class="no-selection">Click on an asset to view details</p>
+                    </div>
+                </div>
+
+                <!-- Asset List -->
+                <div class="asset-list">
+                    <h3>Asset Inventory</h3>
+                    <div id="assetListContent" class="asset-list-content"></div>
+                </div>
+            </aside>
+        </div>
+    </div>
+
+    <script type="module" src="main.js"></script>
+</body>
+</html>

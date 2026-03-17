@@ -1,0 +1,27 @@
+{
+  "name": "london-underground-digital-twin",
+  "version": "1.0.0",
+  "description": "Digital Twin visualization for London Underground assets with Maximo integration",
+  "main": "index.html",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "keywords": [
+    "digital-twin",
+    "maximo",
+    "london-underground",
+    "visualization",
+    "3d"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "vite": "^5.0.0"
+  },
+  "dependencies": {
+    "three": "^0.160.0",
+    "leaflet": "^1.9.4"
+  }
+}
