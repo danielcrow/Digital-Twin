@@ -31,8 +31,73 @@
                     <div class="view-mode-selector">
                         <button id="view3D" class="view-mode-btn active">🎯 3D View</button>
                         <button id="viewMap" class="view-mode-btn">🗺️ Map View</button>
+                        <button id="viewBIM" class="view-mode-btn">🏗️ BIM View</button>
                         <button id="viewStation" class="view-mode-btn">📸 Station View</button>
+                        <button id="toggleSimulator" class="view-mode-btn simulator-btn">🎮 Simulator</button>
+                        <button id="toggleGIS" class="view-mode-btn gis-btn">🌍 GIS Layers</button>
                     </div>
+                    
+                    <!-- Scenario Simulator Panel -->
+                    <div class="simulator-panel" id="simulatorPanel" style="display: none;">
+                        <div class="simulator-header">
+                            <h3>🎮 Scenario Simulator</h3>
+                            <button id="closeSimulator" class="close-btn">✕</button>
+                        </div>
+                        <div class="simulator-content">
+                            <p class="simulator-description">Simulate various situations and observe cascading effects on assets</p>
+                            
+                            <div class="scenario-selection">
+                                <label for="scenarioType">Select Scenario:</label>
+                                <select id="scenarioType" class="scenario-select">
+                                    <option value="">Choose a scenario...</option>
+                                    <option value="POWER_OUTAGE">⚡ Power Outage</option>
+                                    <option value="SIGNAL_FAILURE">🚦 Signal Failure</option>
+                                    <option value="FLOODING">🌊 Flooding</option>
+                                    <option value="FIRE_ALARM">🔥 Fire Alarm</option>
+                                    <option value="EXTREME_HEAT">🌡️ Extreme Heat</option>
+                                    <option value="OVERCROWDING">👥 Overcrowding</option>
+                                    <option value="TRACK_FAULT">🛤️ Track Fault</option>
+                                    <option value="SECURITY_INCIDENT">🚨 Security Incident</option>
+                                </select>
+                            </div>
+                            
+                            <div class="station-selection-sim">
+                                <label for="affectedStations">Affected Stations:</label>
+                                <select id="affectedStations" class="station-select-sim" multiple size="5">
+                                </select>
+                            </div>
+                            
+                            <div class="duration-selection">
+                                <label for="scenarioDuration">Duration:</label>
+                                <select id="scenarioDuration" class="duration-select">
+                                    <option value="60000">1 minute</option>
+                                    <option value="180000">3 minutes</option>
+                                    <option value="300000" selected>5 minutes</option>
+                                    <option value="600000">10 minutes</option>
+                                </select>
+                            </div>
+                            
+                            <button id="startScenario" class="start-scenario-btn">▶️ Start Scenario</button>
+                            
+                            <div class="active-scenarios" id="activeScenarios">
+                                <h4>Active Scenarios</h4>
+                                <div id="activeScenariosList"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- GIS Layers Panel -->
+                    <div class="gis-panel" id="gisPanel" style="display: none;">
+                        <div class="gis-header">
+                            <h3>🌍 GIS Layers</h3>
+                            <button id="closeGIS" class="close-btn">✕</button>
+                        </div>
+                        <div class="gis-content">
+                            <p class="gis-description">Toggle geographic information layers on the map</p>
+                            <div id="gisLayerGroups"></div>
+                        </div>
+                    </div>
+                    
                     <div class="station-selector" id="stationSelector" style="display: none;">
                         <select id="stationSelect" class="station-select">
                             <option value="">Select a station...</option>
@@ -61,6 +126,12 @@
                         <span class="pulse"></span>
                         <span>Auto-refresh: 2s</span>
                     </div>
+                </div>
+
+                <!-- Active Alerts -->
+                <div class="alerts-section" id="alertsSection">
+                    <h3>🚨 Active Alerts</h3>
+                    <div id="alertsList" class="alerts-list"></div>
                 </div>
 
                 <!-- Asset Statistics -->

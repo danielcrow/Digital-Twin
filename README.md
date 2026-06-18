@@ -1,185 +1,291 @@
 # London Underground Digital Twin - Maximo Asset Management
 
-A real-time 3D visualization of London Underground assets integrated with Maximo Asset Management system simulation, featuring live map view, photo-realistic station mapping, and interactive 3D visualization.
+A comprehensive digital twin visualization system for London Underground assets, simulating data from Maximo Asset Management with real-time monitoring, interactive maps, weather alerts, scenario simulation, GIS layers, and BIM visualization capabilities.
 
-## Features
+## 🌟 Features Overview
 
-- **🗺️ Live Map View**: Interactive OpenStreetMap showing all assets across London Underground network
-- **🎯 3D Interactive Visualization**: Explore London Underground assets in an immersive 3D environment
-- **📸 Photo-Realistic Station Views**: View assets overlaid on actual London Underground station photos
-- **Triple View Modes**: Switch between Map, 3D, and Station-specific photo views
-- **Real-time Data Simulation**: Simulates live data streams from Maximo Asset Management
-- **Asset Monitoring**: Track 50+ assets across multiple London Underground lines
-- **Status Tracking**: Monitor operational, warning, and critical asset statuses
-- **Geographic Positioning**: Assets mapped to real London coordinates
-- **Location-Based Filtering**: View assets by specific station with photo context
-- **Detailed Asset Information**: View comprehensive details including:
-  - Asset number and type
-  - Location (line and station)
-  - Real-time sensor data (temperature, vibration, power consumption)
-  - Maintenance schedules
-  - Work orders and MTBF (Mean Time Between Failures)
-  - Health scores
+### 🎯 Core Visualization
+- **3D Asset Visualization**: Interactive 3D representation of 50+ London Underground assets
+- **Real-time Data Updates**: Live sensor data simulation (temperature, vibration, power consumption)
+- **Asset Health Monitoring**: Color-coded health status indicators
+- **Interactive Selection**: Click assets to view detailed information
 
-## Asset Types
+### 🗺️ Multi-View Modes
+1. **3D View**: Traditional 3D scene with rotating asset display
+2. **Live Map View**: Interactive Leaflet map with OpenStreetMap tiles and GIS layers
+3. **Station View**: Photo-realistic station backgrounds with asset overlays
+4. **BIM View**: Building Information Modeling with 3D floor plans and systems
 
-The simulation includes various London Underground asset types:
+### 📍 Live Map Integration
+- Real-time asset markers on London Underground map
+- Station-based clustering and filtering
+- Weather overlay visualization
+- Alert badges on affected stations
+- Interactive marker popups with asset details
+- **NEW**: GIS layer overlays with infrastructure data
+
+### 🌍 GIS Layer System
+Five comprehensive layer categories with 20+ sub-layers:
+
+#### 1. Infrastructure Layers 🏗️
+- **Tunnels**: Underground tunnel network visualization
+- **Platforms**: Platform locations and dimensions
+- **Tracks**: Railway track layout
+- **Stations**: Station buildings and structures
+- **Ventilation Shafts**: Air circulation infrastructure
+
+#### 2. Utilities Layers ⚡
+- **Power Lines**: Electrical distribution network
+- **Water Pipes**: Water supply infrastructure
+- **Drainage**: Drainage and sewage systems
+- **Communication Cables**: Data and communication lines
+
+#### 3. Safety & Security Layers 🚨
+- **Emergency Exits**: Emergency evacuation routes
+- **Fire Suppression**: Fire safety equipment locations
+- **CCTV Coverage**: Security camera coverage zones
+- **Alarm Systems**: Fire and security alarm points
+
+#### 4. Environmental Layers 🌊
+- **Flood Zones**: Flood risk areas
+- **Air Quality Sensors**: Environmental monitoring points
+- **Noise Monitoring**: Noise level measurement locations
+- **Temperature Zones**: Climate control zones
+
+#### 5. Accessibility Layers ♿
+- **Step-Free Routes**: Accessible pathways
+- **Lifts**: Elevator locations
+- **Ramps**: Wheelchair ramps
+- **Accessible Toilets**: Accessible facilities
+
+### 🏗️ BIM Visualization
+Building Information Modeling for detailed station infrastructure:
+
+#### Station BIM Data
+- **King's Cross St. Pancras**: 5-floor model with complete systems
+- **Oxford Circus**: 4-floor model with retail and platforms
+
+#### Floor-by-Floor Modeling
+- **Concourse Level**: Main passenger areas
+- **Platform Levels**: Multiple platform configurations
+- **Plant Rooms**: Mechanical and electrical systems
+- **Retail Spaces**: Commercial areas
+- **Office Spaces**: Administrative areas
+
+#### Building Systems
+- **HVAC Systems**: Heating, ventilation, and air conditioning
+- **Electrical Systems**: Power distribution and lighting
+- **Plumbing Systems**: Water supply and drainage
+- **Fire Suppression**: Fire safety systems
+
+#### BIM Features
+- 3D floor plan visualization
+- System-by-system breakdown
+- Space type categorization
+- Interactive floor selection
+- Real-time system status
+- Integration with asset data
+
+### 🌦️ Alert System
+Three categories of alerts with severity levels:
+- **Weather Alerts**: Severe weather, rain, snow, heat waves, wind, fog
+- **Emergency Alerts**: Fire, flood, power outage, security, medical, evacuation
+- **Operational Alerts**: Signal failures, track faults, delays, overcrowding, maintenance
+
+### 🎮 Scenario Simulator
+Interactive simulation of real-world incidents:
+- **Power Outage**: Simulates electrical failures with cascading effects
+- **Flooding**: Water ingress affecting multiple systems
+- **Fire Emergency**: Fire detection and suppression system activation
+- **Signal Failure**: Railway signaling system malfunctions
+- **Track Fault**: Track infrastructure issues
+- **Overcrowding**: Passenger capacity management
+- **Equipment Failure**: Random asset breakdowns
+- **Severe Weather**: Weather-related operational impacts
+
+Each scenario features:
+- Three-phase effects (immediate → delayed → cascading)
+- Multi-station impact simulation
+- Configurable duration (1-60 minutes)
+- Real-time asset status updates
+- Automatic alert generation
+
+### 📊 Asset Types
 - 🚇 Trains
-- 🎢 Escalators
+- 🔼 Escalators
 - 🛗 Lifts
 - 🚦 Signals
 - 🛤️ Tracks
-- ⚡ Power Supply Units
+- ⚡ Power Supplies
 - 💨 Ventilation Systems
 - 📹 CCTV Cameras
 - 🎫 Ticket Machines
 - 🚪 Platform Doors
 
-## London Underground Lines Covered
+### 🚇 Tube Lines Coverage
+All 11 London Underground lines:
+- Bakerloo, Central, Circle, District, Hammersmith & City
+- Jubilee, Metropolitan, Northern, Piccadilly, Victoria, Waterloo & City
 
-- Bakerloo
-- Central
-- Circle
-- District
-- Hammersmith & City
-- Jubilee
-- Metropolitan
-- Northern
-- Piccadilly
-- Victoria
-- Waterloo & City
+### 📍 Station Coverage
+20 major stations including:
+- King's Cross St. Pancras, Oxford Circus, Waterloo, Liverpool Street
+- Victoria, London Bridge, Paddington, Bank, Leicester Square
+- And 11 more key interchange stations
 
-## Installation
+## 🚀 Technology Stack
 
-1. Install dependencies:
-```bash
-npm install
-```
+- **Three.js**: 3D graphics rendering and BIM visualization
+- **Leaflet.js**: Interactive mapping with GIS layers
+- **Vite**: Development server and build tool
+- **Vanilla JavaScript**: No framework dependencies
+- **CSS3**: Modern styling with gradients and animations
 
-2. Start the development server:
-```bash
-npm run dev
-```
+## 📦 Installation
 
-3. Open your browser to `http://localhost:3000`
+1. Clone the repository
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+3. Start the development server:
+   ```bash
+   npm run dev
+   ```
+4. Open your browser to `http://localhost:3000`
 
-## Usage
+## 📖 Usage Guide
 
 ### View Modes
+- Click **🎨 3D View** for traditional 3D visualization
+- Click **🗺️ Map View** for live map with asset markers and GIS layers
+- Click **📸 Station View** to see photo-realistic station backgrounds
+- Click **🏗️ BIM View** for Building Information Modeling
 
-#### 🗺️ Map View Mode (NEW!)
-- **Live Map**: Interactive OpenStreetMap of London
-- **Station Markers**: Color-coded markers for each station (green=operational, orange=warning, red=critical)
-- **Asset Clustering**: Assets grouped by station location
-- **Click Markers**: Click station markers to see asset details in popup
-- **Real-time Updates**: Markers update every 2 seconds with live data
-- **Pan & Zoom**: Navigate the map to explore different areas
-- **Legend**: Status legend in bottom-right corner
+### Using GIS Layers (Map View)
+1. Switch to **Map View**
+2. Click **🌍 GIS Layers** button to open the layer panel
+3. Browse five layer categories:
+   - Infrastructure, Utilities, Safety, Environmental, Accessibility
+4. Toggle individual layers on/off using checkboxes
+5. Layers are color-coded for easy identification
+6. Zoom in to see detailed layer information
 
-#### 🎯 3D View Mode
-- **Overview**: See all assets across the London Underground network
-- **Rotate View**: Click and drag with mouse
-- **Zoom**: Scroll wheel
-- **Pan**: Right-click and drag
-- **Pause/Resume Rotation**: Click the pause button
-- **Reset View**: Click the reset button
-
-#### 📸 Station View Mode
-- **Photo Overlay**: View assets overlaid on real station photographs
-- **Station Selection**: Choose from 20 major London Underground stations
-- **Location Context**: See assets in their actual physical locations
-- **Toggle Photo**: Show/hide the background photo while keeping 3D assets visible
-- **Filtered Assets**: Only displays assets located at the selected station
+### Using BIM View
+1. Click **🏗️ BIM View** to enter BIM mode
+2. View 3D building model with floor plans
+3. Use the floor selector to navigate between levels
+4. See building systems breakdown (HVAC, electrical, plumbing, fire)
+5. View space types and dimensions
+6. Rotate and zoom to explore the 3D model
 
 ### Interacting with Assets
-- **Select Asset**: Click on any 3D asset in the visualization
-- **View Details**: Selected asset details appear in the right panel
-- **Asset List**: Click on assets in the list to select them
-- **Station Filtering**: In station view, only assets at that location are shown
+- Click on any asset in 3D or map view to see detailed information
+- View real-time sensor data, health scores, and status
+- Monitor temperature, vibration, and power consumption
 
-### Real-time Updates
-- Asset data updates every 2 seconds
-- Status changes are reflected in real-time
-- Sensor readings fluctuate to simulate live monitoring
-- Photo overlays remain synchronized with asset positions
+### Using the Scenario Simulator
+1. Open the **Scenario Simulator** panel
+2. Select a scenario type (e.g., Power Outage, Flooding)
+3. Choose affected stations
+4. Set duration (1-60 minutes)
+5. Click **Start Scenario** to begin simulation
+6. Watch as assets are affected and alerts are generated
+7. Use **Stop Scenario** to end simulation early
 
-## Project Structure
+### Monitoring Alerts
+- View active alerts in the **Active Alerts** section
+- Alerts are color-coded by severity (Critical, High, Medium, Low)
+- Map markers show alert count badges
+- Alerts auto-expire after 60 minutes
+
+### Map Features
+- Zoom and pan to explore London Underground network
+- Click station markers to see assets at that location
+- Weather overlay shows current conditions
+- Alert badges indicate active incidents
+- Toggle GIS layers for infrastructure visualization
+
+## 📁 Project Structure
 
 ```
 london-underground-digital-twin/
 ├── index.html              # Main HTML structure
-├── styles.css              # Styling and layout
-├── main.js                 # 3D visualization and UI logic
-├── maximoDataGenerator.js  # Maximo data simulation
-├── stationPhotoMapper.js   # Station photo mapping and locations (NEW!)
-├── vite.config.js          # Vite configuration
+├── main.js                 # Core application logic
+├── maximoDataGenerator.js  # Asset data simulation
+├── stationPhotoMapper.js   # Station photo management
+├── alertSystem.js          # Alert management system
+├── scenarioSimulator.js    # Scenario simulation engine
+├── gisLayers.js            # GIS layer management (NEW!)
+├── bimVisualization.js     # BIM visualization engine (NEW!)
+├── styles.css              # Application styling
 ├── package.json            # Dependencies
-└── README.md              # This file
+├── vite.config.js          # Vite configuration
+└── public/
+    └── images/             # Station photos
 ```
 
-## Photo Mapping System
+## 🔧 Simulated Maximo Data
 
-The application includes a comprehensive photo mapping system that overlays 3D assets on real London Underground station photographs:
+The application generates realistic Maximo-style asset data including:
+- Asset numbers (e.g., TRAIN-001, ESC-042)
+- Work order history
+- Maintenance schedules
+- Failure predictions
+- Real-time sensor readings
+- Health scores and status indicators
 
-- **20 Major Stations**: Each with photo mapping support
-- **Geographic Coordinates**: Actual latitude/longitude for each station
-- **Asset Positioning**: Predefined positions for platform and concourse areas
-- **Dynamic Filtering**: Shows only relevant assets per station
-- **Dual Photo System**:
-  - **Primary**: Local images from `public/images/` folder (your own photos)
-  - **Fallback**: Unsplash placeholder images (works immediately)
-- **Smart Loading**: Automatically falls back if local images aren't found
-- **Error Handling**: Graceful degradation ensures app always works
+## ✅ Key Features Summary
 
-### Adding Your Own Photos
+### Completed Features
+- ✅ 3D asset visualization with Three.js
+- ✅ Real-time data simulation from Maximo
+- ✅ Interactive live map with Leaflet
+- ✅ Photo-realistic station views
+- ✅ Weather and emergency alert system
+- ✅ Scenario simulation with cascading effects
+- ✅ Multi-station impact modeling
+- ✅ GIS layer system (20+ infrastructure layers)
+- ✅ BIM visualization with floor plans
+- ✅ Building systems modeling
+- ✅ Interactive layer toggling
+- ✅ Real-time asset health monitoring
 
-1. Place station photos in `public/images/` folder
-2. Use the naming convention: `kings-cross.jpg`, `oxford-circus.jpg`, etc.
-3. See `public/images/README.md` for complete list
-4. See `download-photos.md` for sourcing guide
+### 🎯 Use Cases
+1. **Asset Management**: Monitor 50+ assets across London Underground
+2. **Emergency Response**: Simulate incidents and plan responses
+3. **Infrastructure Planning**: Visualize GIS layers for planning
+4. **Facility Management**: Use BIM for building system management
+5. **Maintenance Planning**: Track asset health and predict failures
+6. **Training**: Simulate scenarios for staff training
+7. **Stakeholder Communication**: Visual representation for presentations
 
-**Photo Sources:**
-- Wikimedia Commons (recommended - free, legal, high quality)
-- Unsplash (free, no attribution required)
-- Pexels (free, no attribution required)
-- Your own photography (follow TfL guidelines)
+## 🔮 Future Enhancements
 
-The app works immediately with fallback images, but looks best with actual station photos!
+- [ ] Historical data playback
+- [ ] Predictive maintenance algorithms
+- [ ] Integration with real Maximo API
+- [ ] Mobile responsive design
+- [ ] Export reports and analytics
+- [ ] User authentication and roles
+- [ ] Custom alert rules
+- [ ] Performance metrics dashboard
+- [ ] Additional BIM stations
+- [ ] Real-time GIS data integration
+- [ ] AR/VR visualization modes
 
-## Technologies Used
+## 📄 License
 
-- **Three.js**: 3D graphics and visualization
-- **Leaflet**: Interactive map visualization with OpenStreetMap
-- **Vite**: Fast development server and build tool
-- **Vanilla JavaScript**: Core application logic
-- **CSS3**: Modern styling with gradients and animations
-- **OpenStreetMap**: Free, open-source map tiles
+MIT License - feel free to use and modify for your projects.
 
-## Maximo Integration Simulation
+## 🙏 Credits
 
-This application simulates data that would typically come from IBM Maximo Asset Management:
+- Station photos from Unsplash (fallback)
+- Map tiles from OpenStreetMap
+- Icons from Unicode emoji set
+- Three.js for 3D rendering
+- Leaflet.js for mapping
 
-- **Asset Registry**: Complete asset inventory with unique identifiers
-- **Work Orders**: Maintenance work order tracking
-- **Sensor Data**: Real-time IoT sensor readings
-- **Maintenance Schedules**: Planned and completed maintenance
-- **Asset Health Scores**: Calculated based on multiple factors
-- **Status Monitoring**: Operational, warning, and critical states
+---
 
-## Future Enhancements
-
-- Integration with actual Maximo REST API
-- Historical data visualization and trends
-- Predictive maintenance alerts
-- Mobile responsive design
-- Export reports functionality
-- Multi-user collaboration features
-- AR/VR support for immersive inspection
-
-## License
-
-MIT License
-
-## Author
-
-Created for London Underground asset management visualization
+**Built with ❤️ for London Underground asset management visualization**

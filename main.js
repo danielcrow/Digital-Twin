@@ -2,23 +2,40 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { MaximoDataGenerator } from './maximoDataGenerator.js';
 import { getStationPhoto, getAllStationPhotos } from './stationPhotoMapper.js';
+import { AlertSystem } from './alertSystem.js';
+import { ScenarioSimulator } from './scenarioSimulator.js';
+import { GISLayerManager } from './gisLayers.js';
+import { BIMVisualization } from './bimVisualization.js';
 import L from 'leaflet';
 
 // Initialize Maximo Data Generator
 const maximoData = new MaximoDataGenerator(50);
+
+// Initialize Alert System
+const alertSystem = new AlertSystem();
+
+// Initialize Scenario Simulator
+const scenarioSimulator = new ScenarioSimulator(maximoData, alertSystem);
+
+// Initialize GIS Layer Manager
+let gisLayerManager = null;
+
+// Initialize BIM Visualization
+let bimVisualization = null;
 
 // Scene setup
 let scene, camera, renderer, controls;
 let assetMeshes = [];
 let selectedAsset = null;
 let isRotating = true;
-let currentViewMode = '3D'; // '3D', 'map', or 'station'
+let currentViewMode = '3D'; // '3D', 'map', 'station', or 'bim'
 let currentStation = null;
 let photoVisible = true;
 
 // Map setup
 let map = null;
 let assetMarkers = [];
+let weatherOverlay = null;
 
 // Initialize Three.js scene
 function initScene() {
@@ -364,6 +381,13 @@ function updateRealTimeData() {
     maximoData.updateAllAssets();
     updateAssetMeshes();
     updateStatistics();
+    
+    // Simulate random alerts
+    alertSystem.simulateRandomAlert();
+    
+    // Update alerts display
+    updateAlertsDisplay();
+    
     if (selectedAsset) {
         selectedAsset = maximoData.getAssetById(selectedAsset.id);
         updateAssetDetails();
@@ -372,11 +396,112 @@ function updateRealTimeData() {
     // Update based on current view mode
     if (currentViewMode === 'map' && map) {
         updateMapMarkers();
+        addWeatherOverlay();
     } else if (currentViewMode === 'station' && currentStation) {
         updateAssetListForStation(currentStation.name);
     } else {
         updateAssetList();
     }
+}
+
+// Update alerts display
+function updateAlertsDisplay() {
+    const alertsList = document.getElementById('alertsList');
+    const alerts = alertSystem.getActiveAlerts();
+    
+    if (alerts.length === 0) {
+        alertsList.innerHTML = `
+            <div class="no-alerts">
+                <div class="no-alerts-icon">✅</div>
+                <div>No active alerts</div>
+            </div>
+        `;
+        return;
+    }
+    
+    alertsList.innerHTML = alerts.map(alert => {
+        const age = alert.getAge();
+        const timeText = age < 1 ? 'Just now' : age === 1 ? '1 min ago' : `${age} mins ago`;
+        
+        return `
+            <div class="alert-item ${alert.severity}" data-alert-id="${alert.id}">
+                <div class="alert-header">
+                    <span class="alert-icon">${alert.icon}</span>
+                    <span class="alert-title">${alert.type.replace(/_/g, ' ')}</span>
+                    <span class="alert-time">${timeText}</span>
+                </div>
+                <div class="alert-description">${alert.description}</div>
+                ${alert.affectedStations.length > 0 ? `
+                    <div class="alert-stations">
+                        ${alert.affectedStations.map(station =>
+                            `<span class="alert-station-tag">${station}</span>`
+                        ).join('')}
+                    </div>
+                ` : ''}
+            </div>
+        `;
+    }).join('');
+    
+    // Add click handlers to alerts
+    document.querySelectorAll('.alert-item').forEach(item => {
+        item.addEventListener('click', () => {
+            const alertId = item.dataset.alertId;
+            const alert = alerts.find(a => a.id === alertId);
+            if (alert && alert.affectedStations.length > 0) {
+                // Switch to map view and highlight affected stations
+                if (currentViewMode !== 'map') {
+                    switchViewMode('map');
+                }
+                // Zoom to first affected station
+                const stationInfo = getStationPhoto(alert.affectedStations[0]);
+                if (map && stationInfo) {
+                    map.setView([stationInfo.coordinates.lat, stationInfo.coordinates.lng], 14);
+                }
+            }
+        });
+    });
+}
+
+// Add weather overlay to map
+function addWeatherOverlay() {
+    if (!map) return;
+    
+    const weatherAlerts = alertSystem.getActiveAlerts().filter(a => a.category === 'WEATHER');
+    
+    if (weatherAlerts.length === 0) {
+        if (weatherOverlay) {
+            map.removeControl(weatherOverlay);
+            weatherOverlay = null;
+        }
+        return;
+    }
+    
+    // Remove existing overlay
+    if (weatherOverlay) {
+        map.removeControl(weatherOverlay);
+    }
+    
+    // Create new overlay
+    weatherOverlay = L.control({ position: 'topleft' });
+    
+    weatherOverlay.onAdd = function() {
+        const div = L.DomUtil.create('div', 'weather-overlay');
+        div.innerHTML = `
+            <h4>⛈️ Weather Alerts</h4>
+            ${weatherAlerts.map(alert => `
+                <div class="weather-alert-item" style="background: ${alert.color}20; border-left: 3px solid ${alert.color};">
+                    <span class="weather-alert-icon">${alert.icon}</span>
+                    <div>
+                        <strong>${alert.type.replace(/_/g, ' ')}</strong><br>
+                        <small>${alert.location}</small>
+                    </div>
+                </div>
+            `).join('')}
+        `;
+        return div;
+    };
+    
+    weatherOverlay.addTo(map);
 }
 
 // Initialize map
@@ -470,10 +595,15 @@ function updateMapMarkers() {
             statusClass = 'warning';
         }
         
+        // Check for alerts at this station
+        const stationAlerts = alertSystem.getAlertsByStation(stationName);
+        const hasAlerts = stationAlerts.length > 0;
+        const alertBadge = hasAlerts ? `<div class="marker-alert-badge">${stationAlerts.length}</div>` : '';
+        
         // Create custom icon
         const icon = L.divIcon({
             className: 'asset-marker',
-            html: `<div class="asset-marker-icon ${statusClass}">🚇</div>`,
+            html: `<div class="asset-marker-icon ${statusClass}">🚇${alertBadge}</div>`,
             iconSize: [40, 40],
             iconAnchor: [20, 20],
             popupAnchor: [0, -20]
@@ -485,7 +615,22 @@ function updateMapMarkers() {
             { icon: icon }
         );
         
-        // Create popup content
+        // Create popup content with alerts
+        const alertsHtml = stationAlerts.length > 0 ? `
+            <div style="margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid #e0e0e0;">
+                <strong style="color: #e74c3c;">🚨 Active Alerts (${stationAlerts.length})</strong>
+                ${stationAlerts.map(alert => `
+                    <div style="margin-top: 0.5rem; padding: 0.5rem; background: ${alert.color}20; border-radius: 4px; font-size: 0.85rem;">
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <span>${alert.icon}</span>
+                            <strong>${alert.type.replace(/_/g, ' ')}</strong>
+                        </div>
+                        <div style="margin-top: 0.25rem; color: #666;">${alert.description}</div>
+                    </div>
+                `).join('')}
+            </div>
+        ` : '';
+        
         const popupContent = `
             <div class="map-popup">
                 <div class="map-popup-header">
@@ -509,6 +654,7 @@ function updateMapMarkers() {
                         <span class="map-popup-value">${critical}</span>
                     </div>
                 </div>
+                ${alertsHtml}
             </div>
         `;
         
@@ -525,6 +671,117 @@ function updateMapMarkers() {
     });
 }
 
+// Update active scenarios display
+function updateActiveScenariosDisplay() {
+    const activeScenariosList = document.getElementById('activeScenariosList');
+    const scenarios = scenarioSimulator.getActiveScenarios();
+    
+    if (scenarios.length === 0) {
+        activeScenariosList.innerHTML = '<div class="no-active-scenarios">No active scenarios</div>';
+        return;
+    }
+    
+    activeScenariosList.innerHTML = scenarios.map(scenario => {
+        const elapsed = Math.floor((Date.now() - scenario.startTime) / 1000);
+        const remaining = Math.floor((scenario.duration - (Date.now() - scenario.startTime)) / 1000);
+        
+        return `
+            <div class="active-scenario-item">
+                <div class="scenario-item-header">
+                    <div class="scenario-item-title">
+                        <span class="scenario-item-icon">${scenario.icon}</span>
+                        <span>${scenario.name}</span>
+                    </div>
+                    <button class="stop-scenario-btn" data-scenario-id="${scenario.id}">Stop</button>
+                </div>
+                <div class="scenario-item-details">
+                    ${scenario.affectedAssets.length} assets affected
+                </div>
+                <div class="scenario-item-phase phase-${scenario.phase}">
+                    Phase: ${scenario.phase}
+                </div>
+                <div class="scenario-item-details" style="margin-top: 0.5rem;">
+                    Time remaining: ${Math.floor(remaining / 60)}m ${remaining % 60}s
+                </div>
+                <div class="scenario-item-stations">
+                    ${scenario.stations.map(station =>
+                        `<span class="scenario-station-tag">${station}</span>`
+                    ).join('')}
+                </div>
+            </div>
+        `;
+    }).join('');
+    
+    // Add stop button handlers
+    document.querySelectorAll('.stop-scenario-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const scenarioId = btn.dataset.scenarioId;
+            scenarioSimulator.stopScenario(scenarioId);
+            updateActiveScenariosDisplay();
+        });
+    });
+}
+
+// Initialize simulator controls
+function initSimulatorControls() {
+    const toggleSimulatorBtn = document.getElementById('toggleSimulator');
+    const closeSimulatorBtn = document.getElementById('closeSimulator');
+    const simulatorPanel = document.getElementById('simulatorPanel');
+    const startScenarioBtn = document.getElementById('startScenario');
+    const scenarioTypeSelect = document.getElementById('scenarioType');
+    const affectedStationsSelect = document.getElementById('affectedStations');
+    const scenarioDurationSelect = document.getElementById('scenarioDuration');
+    
+    // Populate stations list
+    const stations = getAllStationPhotos();
+    affectedStationsSelect.innerHTML = stations.map(station =>
+        `<option value="${station.name}">${station.name}</option>`
+    ).join('');
+    
+    // Toggle simulator panel
+    toggleSimulatorBtn.addEventListener('click', () => {
+        const isVisible = simulatorPanel.style.display !== 'none';
+        simulatorPanel.style.display = isVisible ? 'none' : 'block';
+        toggleSimulatorBtn.classList.toggle('active');
+    });
+    
+    closeSimulatorBtn.addEventListener('click', () => {
+        simulatorPanel.style.display = 'none';
+        toggleSimulatorBtn.classList.remove('active');
+    });
+    
+    // Start scenario
+    startScenarioBtn.addEventListener('click', () => {
+        const scenarioType = scenarioTypeSelect.value;
+        const selectedStations = Array.from(affectedStationsSelect.selectedOptions).map(opt => opt.value);
+        const duration = parseInt(scenarioDurationSelect.value);
+        
+        if (!scenarioType) {
+            alert('Please select a scenario type');
+            return;
+        }
+        
+        if (selectedStations.length === 0) {
+            alert('Please select at least one station');
+            return;
+        }
+        
+        // Start the scenario
+        scenarioSimulator.simulateScenario(scenarioType, selectedStations, duration);
+        
+        // Update displays
+        updateActiveScenariosDisplay();
+        updateAlertsDisplay();
+        
+        // Reset form
+        scenarioTypeSelect.value = '';
+        affectedStationsSelect.selectedIndex = -1;
+        
+        // Show success message
+        alert(`Scenario started! Watch the effects unfold over the next ${duration / 60000} minutes.`);
+    });
+}
+
 // Initialize UI controls
 function initControls() {
     const toggleRotationBtn = document.getElementById('toggleRotation');
@@ -532,6 +789,7 @@ function initControls() {
     const view3DBtn = document.getElementById('view3D');
     const viewMapBtn = document.getElementById('viewMap');
     const viewStationBtn = document.getElementById('viewStation');
+    const viewBIMBtn = document.getElementById('viewBIM');
     const stationSelect = document.getElementById('stationSelect');
     const togglePhotoBtn = document.getElementById('togglePhoto');
 
@@ -558,6 +816,13 @@ function initControls() {
     viewStationBtn.addEventListener('click', () => {
         switchViewMode('station');
     });
+
+    // BIM view mode
+    if (viewBIMBtn) {
+        viewBIMBtn.addEventListener('click', () => {
+            switchViewMode('bim');
+        });
+    }
 
     // Station selection
     stationSelect.addEventListener('change', (e) => {
@@ -594,12 +859,13 @@ function populateStationSelector() {
     });
 }
 
-// Switch between 3D, map, and station view modes
+// Switch between 3D, map, station, and BIM view modes
 function switchViewMode(mode) {
     currentViewMode = mode;
     const view3DBtn = document.getElementById('view3D');
     const viewMapBtn = document.getElementById('viewMap');
     const viewStationBtn = document.getElementById('viewStation');
+    const viewBIMBtn = document.getElementById('viewBIM');
     const stationSelector = document.getElementById('stationSelector');
     const togglePhotoBtn = document.getElementById('togglePhoto');
     const photoOverlay = document.getElementById('photoOverlay');
@@ -610,6 +876,7 @@ function switchViewMode(mode) {
     view3DBtn.classList.remove('active');
     viewMapBtn.classList.remove('active');
     viewStationBtn.classList.remove('active');
+    if (viewBIMBtn) viewBIMBtn.classList.remove('active');
 
     if (mode === '3D') {
         view3DBtn.classList.add('active');
@@ -619,6 +886,11 @@ function switchViewMode(mode) {
         togglePhotoBtn.style.display = 'none';
         photoOverlay.style.display = 'none';
         isRotating = true;
+        
+        // Clear BIM visualization if active
+        if (bimVisualization) {
+            bimVisualization.clearBIMModel(scene);
+        }
         
         // Reset camera to 3D view
         camera.position.set(30, 25, 30);
@@ -647,6 +919,12 @@ function switchViewMode(mode) {
         } else {
             // Refresh map markers
             updateMapMarkers();
+            // Add weather overlay
+            addWeatherOverlay();
+            // Initialize GIS layers if not done
+            if (!gisLayerManager) {
+                initGISControls();
+            }
             // Force map to resize
             setTimeout(() => map.invalidateSize(), 100);
         }
@@ -661,6 +939,11 @@ function switchViewMode(mode) {
         togglePhotoBtn.style.display = 'inline-block';
         isRotating = false;
         
+        // Clear BIM visualization if active
+        if (bimVisualization) {
+            bimVisualization.clearBIMModel(scene);
+        }
+        
         // Prompt to select a station if none selected
         if (!currentStation) {
             const stationSelect = document.getElementById('stationSelect');
@@ -669,6 +952,27 @@ function switchViewMode(mode) {
                 loadStationView(stationSelect.value);
             }
         }
+    } else if (mode === 'bim') {
+        if (viewBIMBtn) viewBIMBtn.classList.add('active');
+        canvas3d.style.display = 'block';
+        mapContainer.style.display = 'none';
+        stationSelector.style.display = 'none';
+        togglePhotoBtn.style.display = 'none';
+        photoOverlay.style.display = 'none';
+        isRotating = false;
+        
+        // Initialize BIM visualization if not done
+        if (!bimVisualization) {
+            bimVisualization = new BIMVisualization();
+        }
+        
+        // Hide regular assets
+        assetMeshes.forEach(({ mesh }) => {
+            mesh.visible = false;
+        });
+        
+        // Load default station BIM (King's Cross)
+        loadBIMView('King\'s Cross St. Pancras');
     }
 }
 
@@ -769,16 +1073,199 @@ function updateAssetListForStation(stationName) {
     });
 }
 
+// Initialize GIS controls
+function initGISControls() {
+    if (!map) return;
+    
+    gisLayerManager = new GISLayerManager(map);
+    const gisLayerGroups = document.getElementById('gisLayerGroups');
+    
+    if (!gisLayerGroups) return;
+    
+    // Clear existing content
+    gisLayerGroups.innerHTML = '';
+    
+    // Get all layer groups
+    const layerGroups = gisLayerManager.getLayerGroups();
+    
+    // Create UI for each layer group
+    Object.entries(layerGroups).forEach(([groupKey, group]) => {
+        const groupDiv = document.createElement('div');
+        groupDiv.className = 'gis-layer-group';
+        
+        const headerDiv = document.createElement('div');
+        headerDiv.className = 'gis-group-header';
+        headerDiv.innerHTML = `
+            <span class="gis-group-icon">${group.icon}</span>
+            <span>${group.name}</span>
+        `;
+        
+        const layersDiv = document.createElement('div');
+        layersDiv.className = 'gis-layers-list';
+        
+        // Add each layer in the group
+        group.layers.forEach(layer => {
+            const layerDiv = document.createElement('div');
+            layerDiv.className = 'gis-layer-item';
+            
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.className = 'gis-layer-checkbox';
+            checkbox.id = `gis-layer-${layer.id}`;
+            checkbox.checked = layer.visible;
+            
+            const colorDiv = document.createElement('div');
+            colorDiv.className = 'gis-layer-color';
+            colorDiv.style.backgroundColor = layer.color;
+            
+            const label = document.createElement('label');
+            label.className = 'gis-layer-name';
+            label.htmlFor = checkbox.id;
+            label.textContent = layer.name;
+            
+            // Add toggle handler
+            checkbox.addEventListener('change', (e) => {
+                gisLayerManager.toggleLayer(layer.id, e.target.checked);
+            });
+            
+            layerDiv.appendChild(checkbox);
+            layerDiv.appendChild(colorDiv);
+            layerDiv.appendChild(label);
+            layersDiv.appendChild(layerDiv);
+        });
+        
+        groupDiv.appendChild(headerDiv);
+        groupDiv.appendChild(layersDiv);
+        gisLayerGroups.appendChild(groupDiv);
+    });
+    
+    // Add toggle button handler
+    const gisBtn = document.getElementById('toggleGIS');
+    const gisPanel = document.getElementById('gisPanel');
+    
+    if (gisBtn && gisPanel) {
+        gisBtn.addEventListener('click', () => {
+            const isVisible = gisPanel.style.display !== 'none';
+            gisPanel.style.display = isVisible ? 'none' : 'block';
+            gisBtn.classList.toggle('active');
+        });
+        
+        // Close button
+        const closeBtn = gisPanel.querySelector('.close-btn');
+        if (closeBtn) {
+            closeBtn.addEventListener('click', () => {
+                gisPanel.style.display = 'none';
+                gisBtn.classList.remove('active');
+            });
+        }
+    }
+}
+
+// Load BIM view for a station
+function loadBIMView(stationName) {
+    if (!bimVisualization) {
+        bimVisualization = new BIMVisualization(scene);
+    }
+    
+    // Clear existing BIM models
+    bimVisualization.clearAllBIMModels();
+    
+    // Create new BIM model at origin
+    const bimModel = bimVisualization.createStationBIM(stationName, { x: 0, y: 0, z: 0 });
+    
+    if (!bimModel) {
+        console.warn(`No BIM data available for ${stationName}`);
+        return;
+    }
+    
+    // Add the model to the scene
+    scene.add(bimModel);
+    
+    // Position camera to view the BIM model
+    const box = new THREE.Box3().setFromObject(bimModel);
+    const center = box.getCenter(new THREE.Vector3());
+    const size = box.getSize(new THREE.Vector3());
+    
+    const maxDim = Math.max(size.x, size.y, size.z);
+    const distance = maxDim * 1.5;
+    
+    camera.position.set(
+        center.x + distance,
+        center.y + distance * 0.7,
+        center.z + distance
+    );
+    camera.lookAt(center);
+    controls.target.copy(center);
+    controls.update();
+    
+    // Create BIM info panel
+    createBIMInfoPanel(bimModel);
+}
+
+// Create BIM information panel
+function createBIMInfoPanel(bimModel) {
+    // Remove existing panel if any
+    const existingPanel = document.getElementById('bimInfoPanel');
+    if (existingPanel) {
+        existingPanel.remove();
+    }
+    
+    const panel = document.createElement('div');
+    panel.id = 'bimInfoPanel';
+    panel.className = 'bim-info-panel';
+    
+    panel.innerHTML = `
+        <h4>🏗️ ${bimModel.stationName}</h4>
+        <div class="bim-stat">
+            <span class="bim-stat-label">Total Floors:</span>
+            <span class="bim-stat-value">${bimModel.floors.length}</span>
+        </div>
+        <div class="bim-stat">
+            <span class="bim-stat-label">Building Systems:</span>
+            <span class="bim-stat-value">${Object.keys(bimModel.systems).length}</span>
+        </div>
+        <div class="bim-stat">
+            <span class="bim-stat-label">Total Spaces:</span>
+            <span class="bim-stat-value">${bimModel.floors.reduce((sum, f) => sum + f.spaces.length, 0)}</span>
+        </div>
+        <div class="bim-floor-selector">
+            <label for="bimFloorSelect">Select Floor:</label>
+            <select id="bimFloorSelect" class="bim-floor-select">
+                ${bimModel.floors.map(floor => 
+                    `<option value="${floor.level}">${floor.name}</option>`
+                ).join('')}
+            </select>
+        </div>
+    `;
+    
+    document.body.appendChild(panel);
+    
+    // Add floor selector handler
+    const floorSelect = document.getElementById('bimFloorSelect');
+    if (floorSelect) {
+        floorSelect.addEventListener('change', (e) => {
+            const level = parseInt(e.target.value);
+            bimVisualization.highlightFloor(scene, level);
+        });
+    }
+}
+
 // Initialize application
 function init() {
     initScene();
     initControls();
+    initSimulatorControls();
     updateStatistics();
     updateAssetList();
+    updateAlertsDisplay();
+    updateActiveScenariosDisplay();
     animate();
 
     // Update data every 2 seconds
     setInterval(updateRealTimeData, 2000);
+    
+    // Update scenarios display every second
+    setInterval(updateActiveScenariosDisplay, 1000);
 }
 
 // Start the application when DOM is loaded
